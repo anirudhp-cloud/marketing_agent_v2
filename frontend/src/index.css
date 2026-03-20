@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Light theme (default) ── */
+:root {
+  /* Stored as R G B channels for Tailwind alpha modifier support */
+  --ink: 255 255 255;
+  --ink-2: 248 250 252;
+  --ink-3: 241 245 249;
+  --fg: 30 41 59;
+  --fg-2: 71 85 105;
+  --fg-3: 148 163 184;
+  --coral: 99 102 241;
+  --coral-2: 129 140 248;
+  --amber: 245 158 11;
+  --mint: 16 185 129;
+  --sky: 59 130 246;
+  --lilac: 167 139 250;
+  /* rim/glass keep full rgba (never used with Tailwind alpha modifiers) */
+  --rim: rgba(0, 0, 0, 0.08);
+  --rim-2: rgba(0, 0, 0, 0.12);
+  --glass: rgba(0, 0, 0, 0.02);
+  --glass-2: rgba(0, 0, 0, 0.04);
+  /* Accent glow shadows */
+  --accent-glow: rgb(99 102 241 / 0.4);
+  --accent-glow-sm: rgb(99 102 241 / 0.2);
+  --accent-glow-md: rgb(99 102 241 / 0.35);
+  --accent-glow-lg: rgb(99 102 241 / 0.45);
+  --accent-glow-xs: rgb(99 102 241 / 0.08);
+  --accent-glow-border: rgb(99 102 241 / 0.15);
+  --mint-glow: rgb(16 185 129 / 0.35);
+  --pulse-sm: rgb(99 102 241 / 0.3);
+  --pulse-lg: rgb(99 102 241 / 0.5);
+  --btn-gradient-to: #818cf8;
+  --btn-mint-to: #059669;
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Dark theme (Reference UI) ── */
+html.dark {
+  --ink: 12 14 20;
+  --ink-2: 19 22 31;
+  --ink-3: 28 32 48;
+  --fg: 238 240 246;
+  --fg-2: 160 168 191;
+  --fg-3: 90 98 120;
+  --coral: 255 77 46;
+  --coral-2: 255 122 92;
+  --amber: 245 166 35;
+  --mint: 0 217 160;
+  --sky: 77 184 255;
+  --lilac: 167 139 250;
+  --rim: rgba(255, 255, 255, 0.08);
+  --rim-2: rgba(255, 255, 255, 0.14);
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-2: rgba(255, 255, 255, 0.06);
+  --accent-glow: rgb(255 77 46 / 0.4);
+  --accent-glow-sm: rgb(255 77 46 / 0.2);
+  --accent-glow-md: rgb(255 77 46 / 0.35);
+  --accent-glow-lg: rgb(255 77 46 / 0.45);
+  --accent-glow-xs: rgb(255 77 46 / 0.08);
+  --accent-glow-border: rgb(255 77 46 / 0.15);
+  --mint-glow: rgb(0 217 160 / 0.35);
+  --pulse-sm: rgb(255 77 46 / 0.3);
+  --pulse-lg: rgb(255 77 46 / 0.5);
+  --btn-gradient-to: #ff6040;
+  --btn-mint-to: #059669;
+  --font-sans: 'Outfit', sans-serif;
+  --font-display: 'Playfair Display', serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: rgb(var(--ink));
+    color: rgb(var(--fg));
+    font-family: var(--font-sans);
+    cursor: default;
+  }
+  /* Noise overlay */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.15;
+  }
+  html.dark body::after {
+    opacity: 0.5;
+  }
+  html.dark select option {
+    background: rgb(28 32 48);
+  }
+}
+
+@layer components {
+  .ambient-glow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(
+        ellipse 70% 50% at 75% 5%,
+        rgba(99, 102, 241, 0.04) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 50% 35% at 5% 90%,
+        rgba(16, 185, 129, 0.03) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 40% 30% at 50% 50%,
+        rgba(59, 130, 246, 0.02) 0%,
+        transparent 50%
+      );
+  }
+  html.dark .ambient-glow {
+    background: radial-gradient(
+        ellipse 70% 50% at 75% 5%,
+        rgba(255, 77, 46, 0.09) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 50% 35% at 5% 90%,
+        rgba(0, 217, 160, 0.05) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 40% 30% at 50% 50%,
+        rgba(77, 184, 255, 0.03) 0%,
+        transparent 50%
+      );
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+}

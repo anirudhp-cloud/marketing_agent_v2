@@ -1,0 +1,94 @@
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.local
+.env.*.local
+
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.venv/
+venv/
+env/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ========================
+# Node.js / Frontend
+# ========================
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# ========================
+# IDEs & Editors
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Database files (large originals — NOT the shards)
+# ========================
+locations_v2.db
+locations_v2_compact.db
+backend/retail_marketing.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# ========================
+# Generated / Uploaded content
+# ========================
+backend/static/gen_images/*
+!backend/static/gen_images/.gitkeep
+backend/static/uploads/*
+!backend/static/uploads/.gitkeep
+
+# ========================
+# Build / Utility scripts (not needed in repo)
+# ========================
+compact_db.py
+inspect_db.py
+inspect_db2.py
+check_distribution.py
+test_shard.py
+test_shards.py
+backend/check_db_keys.py
+backend/check_locations.py
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
+
+# ========================
+# OS files
+# ========================
+ehthumbs.db
+
+# ========================
+# Misc
+# ========================
+*.bak
+*.tmp
+*.temp
+marketing_agent_v2/
