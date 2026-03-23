@@ -3,6 +3,23 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
+
+# Reference product images for specific brands
+_BRAND_REFERENCE_IMAGES: dict[str, Path] = {
+    "smartwheelsgps": Path(__file__).resolve().parent.parent.parent.parent
+    / "bussiness_requirements"
+    / "OBD_2_device.png",
+}
+
+
+def get_reference_image_path(brand_name: str) -> Path | None:
+    """Return the reference product image path for a brand, if one exists."""
+    key = brand_name.strip().lower().replace(" ", "")
+    path = _BRAND_REFERENCE_IMAGES.get(key)
+    if path and path.exists():
+        return path
+    return None
 
 # ── Goal-specific angle guidance ──
 GOAL_ANGLES: dict[str, str] = {
@@ -26,9 +43,26 @@ def build_system_prompt() -> str:
         "an image generation prompt suitable for FLUX 1.1 Pro, "
         "and a video generation prompt suitable for Sora 2 (short 5-second Reel). "
         "You also generate hashtags for each variant. "
+        "When a reference product image is provided, study it carefully and "
+        "incorporate the actual product appearance (shape, colour, form factor, "
+        "textures, branding elements) into every image_prompt you generate so "
+        "that the FLUX-generated images accurately depict the real product. "
         "Always output valid JSON matching the exact schema requested. "
         "Never include markdown fences or explanation — only raw JSON."
     )
+
+
+def _build_reference_image_note(ctx: dict) -> str:
+    """Return a note about the reference image if one is attached."""
+    brand_name = ctx.get("brand_name", "")
+    if get_reference_image_path(brand_name):
+        return (
+            "\nREFERENCE PRODUCT IMAGE: A real photo of the product is attached. "
+            "Use this image as the primary visual reference when writing every "
+            "image_prompt — describe the actual device appearance (shape, colour, "
+            "size, ports, LED indicators) so FLUX reproduces it faithfully."
+        )
+    return ""
 
 
 def build_user_prompt(ctx: dict) -> str:
@@ -129,6 +163,7 @@ Formats: {formats_str}
 Image style: {ctx.get('image_style', 'modern')}
 Content type: {', '.join(ctx.get('content_type', ['post'])) if isinstance(ctx.get('content_type'), list) else ctx.get('content_type', 'post')}
 Tone of voice: {ctx.get('tone_of_voice', 'professional')}
+{_build_reference_image_note(ctx)}
 
 === HASHTAG REQUIREMENTS ===
 {hashtag_instruction}

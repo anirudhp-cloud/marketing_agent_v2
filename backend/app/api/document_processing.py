@@ -444,8 +444,13 @@ async def _extract_brand_insights(text: str) -> dict:
 
 
 def _postprocess_logo(img: Image.Image) -> Image.Image:
-    """Clean up an extracted logo: trim whitespace, remove solid background, ensure RGBA."""
+    """Clean up an extracted logo: trim whitespace, remove solid background, ensure RGBA.
+
+    If background removal makes the image mostly transparent (>90% of pixels),
+    we fall back to the original image with only whitespace trimmed.
+    """
     img = img.convert("RGBA")
+    original = img.copy()
 
     # Try to remove solid-colour background by checking corner pixels
     pixels = img.load()
@@ -464,6 +469,8 @@ def _postprocess_logo(img: Image.Image) -> Image.Image:
     if count >= 3:
         # Make matching pixels transparent (with tolerance)
         tolerance = 30
+        transparent_count = 0
+        total_pixels = w * h
         for y in range(h):
             for x in range(w):
                 r, g, b, a = pixels[x, y]
@@ -473,11 +480,28 @@ def _postprocess_logo(img: Image.Image) -> Image.Image:
                     and abs(b - bg_color[2]) < tolerance
                 ):
                     pixels[x, y] = (r, g, b, 0)
+                    transparent_count += 1
+
+        # If >90% of pixels were made transparent, the logo content was lost
+        if total_pixels > 0 and (transparent_count / total_pixels) > 0.90:
+            logger.warning(
+                "Background removal made %.0f%% of pixels transparent — "
+                "falling back to original image (bg_color=%s)",
+                (transparent_count / total_pixels) * 100,
+                bg_color,
+            )
+            img = original
 
     # Trim transparent border
     bbox = img.getbbox()
     if bbox:
         img = img.crop(bbox)
+    else:
+        logger.warning("Logo image is fully transparent after processing — using original")
+        img = original
+        bbox = img.getbbox()
+        if bbox:
+            img = img.crop(bbox)
 
     return img
 

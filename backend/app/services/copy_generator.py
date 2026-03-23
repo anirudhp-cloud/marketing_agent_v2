@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import logging
 from typing import AsyncGenerator
@@ -11,7 +12,11 @@ import aiosqlite
 from app.config import get_settings
 from app.utils.llm import get_openai_client
 from app.services.context_composer import compose_context
-from app.generators.instagram import build_system_prompt, build_user_prompt
+from app.generators.instagram import (
+    build_system_prompt,
+    build_user_prompt,
+    get_reference_image_path,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,14 +45,36 @@ async def generate_copy(
     system_prompt = build_system_prompt()
     user_prompt = build_user_prompt(ctx)
 
-    # 3. Call GPT-4o
+    # 3. Call GPT-4o (with vision if reference image exists)
     yield {"step": "calling_gpt"}
     client = get_openai_client()
+
+    # Build user message — multimodal if a reference product image is available
+    ref_image_path = get_reference_image_path(ctx.get("brand_name", ""))
+    if ref_image_path:
+        logger.info("Attaching reference image %s for brand %s", ref_image_path, ctx.get("brand_name"))
+        img_b64 = base64.b64encode(ref_image_path.read_bytes()).decode()
+        user_message = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{img_b64}",
+                        "detail": "high",
+                    },
+                },
+                {"type": "text", "text": user_prompt},
+            ],
+        }
+    else:
+        user_message = {"role": "user", "content": user_prompt}
+
     response = await client.chat.completions.create(
         model=settings.azure_openai_deployment,
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
+            user_message,
         ],
         temperature=0.8,
         max_tokens=4096,

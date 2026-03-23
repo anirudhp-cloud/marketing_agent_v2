@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 # Instagram format specs (width × height)
 FORMAT_SPECS = {
@@ -27,9 +30,15 @@ def overlay_logo(
 ) -> Image.Image:
     """Overlay a logo on a base image at the specified position."""
     if not logo_path.exists():
+        logger.warning("Logo file does not exist at overlay time: %s", logo_path)
         return base
 
     logo = Image.open(logo_path).convert("RGBA")
+
+    # Warn if logo is fully transparent (post-processing may have stripped it)
+    if logo.getbbox() is None:
+        logger.warning("Logo image is fully transparent — overlay will be invisible: %s", logo_path)
+        return base
 
     # Scale logo to ~15% of base width
     ratio = (base.width * 0.15) / logo.width

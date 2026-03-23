@@ -72,20 +72,27 @@ async def _call_flux(prompt: str, size: str) -> bytes:
 
 
 def _resolve_logo_path(logo_url: str) -> Path | None:
+    print(f"Resolving logo URL: {logo_url}")
     """Convert a logo URL like /static/uploads/xyz_logo.png to a local file path."""
     if not logo_url:
+        logger.warning("Logo URL is empty — no logo will be overlaid")
         return None
     # Strip host if full URL
+    from urllib.parse import urlparse, unquote
     if "://" in logo_url:
-        from urllib.parse import urlparse
-        path = urlparse(logo_url).path
+        path = unquote(urlparse(logo_url).path)
     else:
-        path = logo_url
+        path = unquote(logo_url)
 
     # /static/uploads/xyz.png → backend/static/uploads/xyz.png
     if path.startswith("/static/"):
         local = Path(__file__).resolve().parent.parent.parent / "static" / path[len("/static/"):]
-        return local if local.exists() else None
+        if local.exists():
+            logger.info("Logo resolved: %s", local)
+            return local
+        logger.warning("Logo file not found on disk: %s", local)
+        return None
+    logger.warning("Logo URL does not start with /static/: %s", logo_url)
     return None
 
 
@@ -119,6 +126,16 @@ async def generate_images(
     logo_url = ctx.get("logo_url", "")
     logo_path = _resolve_logo_path(logo_url)
     skip_logo = (logo_placement.lower().startswith("no logo") or logo_path is None)
+
+    if skip_logo:
+        if logo_placement.lower().startswith("no logo"):
+            logger.info("Logo overlay disabled by user (placement='%s')", logo_placement)
+        elif not logo_url:
+            logger.warning("No logo URL in session context — logo will not appear on images")
+        elif logo_path is None:
+            logger.warning("Logo file could not be resolved from URL '%s' — skipping overlay", logo_url)
+    else:
+        logger.info("Logo overlay enabled: path=%s, placement='%s'", logo_path, logo_placement)
 
     # Get all variants for this session
     cur = await db.execute(

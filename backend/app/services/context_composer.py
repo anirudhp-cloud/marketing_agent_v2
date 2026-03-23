@@ -49,7 +49,7 @@ async def compose_context(db: aiosqlite.Connection, session_id: str) -> dict:
         "brand_insights": bp.get("brandInsights", ""),
         "brand_colours": bp.get("brandColors", []),
         "logo_url": bp.get("logoUrl", ""),
-        "logo_placement": bp.get("logoPlacement", "bottom-right"),
+        "logo_placement": bp.get("logoPlacement", "Bottom-right corner"),
         "typography_style": bp.get("typographyStyle", ""),
         "target_market_location": bp.get("targetMarketLocation", ""),
         "instagram_url": bp.get("instagramUrl", ""),

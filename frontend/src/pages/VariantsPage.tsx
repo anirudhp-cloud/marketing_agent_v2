@@ -172,20 +172,29 @@ export default function VariantsPage() {
           setError(data.message);
           return;
         }
+        // "done" is only the copy-generator finishing (Phase 1).
+        // Keep the SSE open so videos (Phase 2) and images + logo overlay (Phase 3) can complete.
         if (data.step === "done") {
-          es.close();
-          variantsApi.list(sid).then((res) => {
-            setVariants(res.variants);
-            if (res.variants.length > 0) {
-              const rec = res.variants.find((v) => v.recommended);
-              setSelected(rec ? rec.id : res.variants[0].id);
-            }
-            setRemovedTags([]);
-            setRegenText("");
-            setRegenerating(false);
-          }).catch(() => {
-            setRegenerating(false);
-          });
+          return;
+        }
+        if (data.step === "images_done" || data.step === "videos_done") {
+          // images_done is the final pipeline event; videos_done fires if images are skipped.
+          // Only close once images_done arrives (or videos_done when no images are requested).
+          if (data.step === "images_done") {
+            es.close();
+            variantsApi.list(sid).then((res) => {
+              setVariants(res.variants);
+              if (res.variants.length > 0) {
+                const rec = res.variants.find((v) => v.recommended);
+                setSelected(rec ? rec.id : res.variants[0].id);
+              }
+              setRemovedTags([]);
+              setRegenText("");
+              setRegenerating(false);
+            }).catch(() => {
+              setRegenerating(false);
+            });
+          }
         }
       } catch {
         // ignore
